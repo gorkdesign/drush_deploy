@@ -26,7 +26,8 @@ function deploy_drush_command() {
     ),
     'examples' => array(
     ),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH, // No bootstrap at all.
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'config' => 'deploy',
   );
 
   spl_autoload_register('drush_autoload_class');
@@ -83,7 +84,6 @@ function drush_deploy_transaction(&$obj = NULL, $commands) {
       try {
         $obj->{$cmd}();
       }
-      //catch (DrushDeployException $e) {
       catch (CommandException $e) {
         foreach ($commands as $ri => $rcmd) {
           if (is_callable(array($obj, $rcmd . '_rollback'))) {
@@ -99,6 +99,13 @@ function drush_deploy_transaction(&$obj = NULL, $commands) {
   }
 }
 
+/**
+ * Just a copy of the PSR-0 autoloader. This should probably go in
+ * drush core eventually.
+ *
+ * @param $className
+ * @return void
+ */
 function drush_autoload_class($className) {
   $className = ltrim($className, '\\');
   $fileName  = '';

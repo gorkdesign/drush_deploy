@@ -105,5 +105,6 @@ class Git {
     $cmd = implode(' && ', $execute);
     return $cmd;
   }
+}
 
 

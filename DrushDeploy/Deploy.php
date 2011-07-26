@@ -31,10 +31,11 @@ class Deploy {
   function __construct($sites) {
     // These variables MUST be set in the client config files. If they are not set,
     // the deploy will fail with an error.
-    if ($this->application = drush_get_option('deploy-application', NULL)) {
+    $app = drush_get_option('application', NULL);
+    if (!$this->application = drush_get_option('application', NULL)) {
       $this->abort("Please specify the name of your application");
     }
-    if ($this->repository = drush_get_option('deploy-repository', NULL)) {
+    if (!$this->repository = drush_get_option('deploy-repository', NULL)) {
       $this->abort("Please specify the repository that houses your application's code");
     }
 
