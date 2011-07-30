@@ -47,7 +47,7 @@ class Deploy {
 
     // Maintenance base filename
     $this->maintenance_basename = drush_get_option('maintenance_basename', 'maintenance');
-    $this->real_revision = $this->query_revision($revision, FALSE);
+    $this->real_revision = $this->git->query_revision($this->revision, FALSE);
     $class = 'DrushDeploy\Strategy\\' . $this->deploy_via;
     $this->strategy = new $class($this);
 
@@ -143,17 +143,17 @@ class Deploy {
     // TODO: make this parallel.
     foreach ($this->sites as $site) {
       $cmd = $this->__buildCommand($command, $site);
-    }
-    drush_print('CMD: ' . $cmd);
-    try {
-      if (!drush_shell_exec($cmd, $args)) {
-        $output = drush_shell_exec_output();
-        drush_print_r($output);
-        throw new CommandException(implode("\n", drush_shell_exec_output()));
+      drush_print('CMD: ' . $cmd);
+      try {
+        if (!drush_shell_exec($cmd, $args)) {
+          $output = drush_shell_exec_output();
+          drush_print_r($output);
+          throw new CommandException(implode("\n", drush_shell_exec_output()));
+        }
       }
-    }
-    catch (CommandException $e) {
-      drush_set_error($e);
+      catch (CommandException $e) {
+        drush_set_error($e);
+      }
     }
   }
 
