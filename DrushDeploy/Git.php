@@ -105,6 +105,30 @@ class Git {
     $cmd = implode(' && ', $execute);
     return $cmd;
   }
+
+  /**
+   * Getting the actual commit id, in case we were passed a tag
+   * or partial sha or something - it will return the sha if you pass a sha, too
+   */
+  function query_revision($revision, $local = TRUE) {
+    $repository = $local ? '.' : $this->config->repository;
+    if (preg_match('/^[0-9a-f]{40}$/', $revision)) return $revision;
+    $command = 'git ls-remote ' . $repository . ' ' . $revision;
+    $revdata = $this->config->capture($command, 'local');
+
+    $newrev = NULL;
+    foreach ($revdata as $refs) {
+      list($rev, $ref) = preg_split("/\s+/", $refs);
+      if (preg_replace('/refs\\/.*?\//', '', $ref) == $revision) {
+        $newrev = $rev;
+        break;
+      }
+    }
+    if (!preg_match('/^[0-9a-f]{40}$/', $newrev)) {
+      throw new Exception("Unable to resolve revision for '$revision' on repository '$repository'. $newrev");
+    }
+
+    return $newrev;
+  }
+
 }
-
-
