@@ -1,6 +1,6 @@
 <?php
 namespace DrushDeploy;
-class Deploy {
+class Deploy extends DrushCommand {
   public $sites;
   public $application;
   public $repository;
@@ -27,6 +27,9 @@ class Deploy {
   public $previous_revision;
   public $run_method;
   public $latest_release;
+  public static $tasks = array();
+  public static $before = array();
+  public static $after = array();
 
   function __construct($sites) {
     // These variables MUST be set in the client config files. If they are not set,
@@ -124,7 +127,7 @@ class Deploy {
    * task, which handles the cold start specifically.
    */
   function deploy() {
-    $this->update();
+    $this->deploy_update();
     //$this->restart();
   }
 
@@ -133,7 +136,7 @@ class Deploy {
    * It is safe to run this task on servers that have already been set up; it
    * will not destroy any deployed revisions or data.
    */
-  function setup() {
+  function deploy_setup() {
     $dirs = array($this->releases_path, $this->shared_path);
     $dirs_str = implode(' ', $dirs);
     $this->run('mkdir -p ' . $dirs_str . ' && chmod g+w ' . $dirs_str);
@@ -143,7 +146,7 @@ class Deploy {
     // TODO: make this parallel.
     foreach ($this->sites as $site) {
       $cmd = $this->__buildCommand($command, $site);
-      drush_print('CMD: ' . $cmd);
+      drush_log('CMD: ' . $cmd);
       try {
         if (!drush_shell_exec($cmd, $args)) {
           $output = drush_shell_exec_output();
@@ -164,7 +167,7 @@ class Deploy {
     else {
       $cmd = $this->__buildCommand($command, $site);
     }
-    drush_print('CMD: ' . $cmd);
+    drush_log('CMD: ' . $cmd);
     if (drush_shell_exec($cmd)) {
       return drush_shell_exec_output();
     }
@@ -204,10 +207,10 @@ class Deploy {
    * you will want to call `deploy' instead of `update', but `update' can be \
    * handy if you want to deploy, but not immediately restart your application.
    */
-  function update() {
+  function deploy_update() {
     drush_deploy_transaction($this, array(
-      'update_code',
-      'symlink'
+      'deploy_update_code',
+      'deploy_symlink'
     ));
   }
 
@@ -223,39 +226,39 @@ class Deploy {
    * :deploy_via variable to the strategy you want to use to deploy (it \
    * defaults to :checkout).
    */
-  function update_code() {
+  function deploy_update_code() {
     $this->strategy->deploy();
   }
 
-  function update_code_rollback() {
+  function deploy_update_code_rollback() {
     $this->run("rm -rf #{release_path}; true");
   }
 
-  function strategyCommand() {
+  function strategy_command() {
     switch ($this->deploy_via) {
     case 'checkout':
-      $command = $this->strategyCommand() . ' && ' . $this->mark();
+      $command = $this->strategy_command() . ' && ' . $this->mark();
       break;
     case 'remotecache':
-      $this->updateRepositoryCache();
-      $this->copyRepositoryCache();
+      $this->update_repository_cache();
+      $this->copy_repository_cache();
       break;
     }
     return $command;
     //finalize_update
   }
 
-  function finalize_update() {
+  function deploy_finalize_update() {
     return;
   }
 
-  function symlink() {
+  function deploy_symlink() {
     //$this->run('iidf -h');
     $cmd = sprintf("rm -f %s && ln -s %s %s", $this->current_path, $this->latest_release(), $this->current_path);
     $this->run($cmd);
   }
 
-  function symlink_rollback() {
+  function deploy_symlink_rollback() {
     if ($this->previous_release) {
       $cmd = sprintf("echo 'rm -f %s; ln -s %s %s; true'", $this->current_path, $this->previous_release, $this->current_path);
       $this->run($cmd);
@@ -270,7 +273,7 @@ class Deploy {
    * discover that you've deployed a lemon; `drush deploy-rollback' and you're right
    * back where you were, on the previously deployed version.
    */
-  function rollback() {
+  function deploy_rollback() {
     $this->__rollback_revision();
     $this->__rollback_cleanup();
   }
@@ -317,7 +320,7 @@ class Deploy {
    * will use sudo to clean up the old releases, but if sudo is not available
    * for your environment, set the :use_sudo variable to false instead.
    */
-  public function cleanup() {
+  public function deploy_cleanup() {
     $count = drush_get_option('keep_releases', 5);
     $total = count($this->releases());
     if ($count >= count($this->releases())) {
@@ -348,6 +351,11 @@ class Deploy {
   function abort($message) {
     drush_set_error('DRUSH_DEPLOY_ERROR', $message);
   }
+/*
+  static function addTask($name, $closure) {
+    self::$tasks[$name] = $closure;
+  }
+*/
 }
 
 class CommandException extends \Exception {}
