@@ -7,9 +7,11 @@ class Git {
   // Users may override this by setting the scm_command variable.
   public $default_command = "git";
   public $config;
+  public $verbose;
 
   function __construct($config) {
     $this->config = $config;
+    $this->verbose = drush_get_context('DRUSH_VERBOSE') ? '' : ' -q';
   }
 
   // When referencing "head", use the branch we want to deploy or, by
@@ -39,6 +41,7 @@ class Git {
     $execute = array();
     $args_str = implode(' ', $args);
     $repo = $this->config->repository;
+    $verbose = $this->verbose;
     $execute[] = "git clone $verbose $args_str $repo $destination";
     // checkout into a local branch rather than a detached HEAD
     $execute[] = "cd $destination && git checkout $verbose -b deploy $revision";

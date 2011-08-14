@@ -6,66 +6,12 @@
  *
  */
 
-/**
- * Ipmlementation of hook_drush_init().
- */
-function deploy_drush_init() {
-  require 'deploy_helpers.inc';
-  // Load config files specified in command hooks.
-  foreach (drush_context_names() as $context) {
-    drush_load_config_file($context, drush_deploy_load_config($context, 'deploy'));
-  }
-}
-
-/**
+require 'upstream.inc';
 
 /**
  * Ipmlementation of hook_drush_help().
  */
 function deploy_drush_help($section) {
-}
-
-
-/**
- * Modified copy of _drush_config_file. This should go upstream.
- */
-function drush_deploy_load_config($context, $prefix = NULL) {
-  $configs = array();
-  $config_file = $prefix ? $prefix . '.' . 'drushrc.php' : 'drushrc.php';
-
-  // Did the user explicitly specify a config file?
-  if ($config = drush_get_option(array('c', 'config'))) {
-    if (is_dir($config)) {
-      $config = $config . '/drushrc.php';
-    }
-    $configs['custom'] = $config;
-  }
-
-  if ($site_path = drush_get_context('DRUSH_DRUPAL_SITE_ROOT')) {
-    $configs['site'] = $site_path . "/" . $config_file;
-  }
-
-  if ($drupal_root = drush_get_context('DRUSH_DRUPAL_ROOT')) {
-    $configs['drupal'] = $drupal_root . '/' . $config_file;
-  }
-
-  // in the user home directory
-  if (!is_null(drush_server_home())) {
-    $configs['user'] = drush_server_home() . '/.' . $config_file;
-  }
-
-  // in $HOME/.drush directory
-  if (!is_null(drush_server_home())) {
-    $configs['home.drush'] = drush_server_home() . '/.drush/' . $config_file;
-  }
-
-  // In the system wide configuration folder.
-  $configs['system'] = drush_get_context('ETC_PREFIX', '') . '/etc/drush/' . $config_file;
-
-  // in the drush installation folder
-  $configs['drush'] = dirname(__FILE__) . '/../' . $config_file;
-
-  return empty($configs[$context]) ? '' : $configs[$context];
 }
 
 /**
@@ -88,7 +34,7 @@ function deploy_drush_command() {
   spl_autoload_register('drush_autoload_class');
 
   foreach(\DrushDeploy\Deploy::getCommands() as $command) {
-    $items[$command] = array(
+    $items['deploy-' . $command] = array(
       'description' => '',
       'arguments' => array(),
       'options' => array(),
@@ -105,13 +51,45 @@ function deploy_drush_command() {
 }
 
 /**
+ * Ipmlementation of hook_drush_init().
+ */
+function deploy_drush_init() {
+  // Load deploy config files.
+  foreach (drush_context_names() as $context) {
+    drush_load_config_file($context, _drush_config_file($context, 'deploy'));
+  }
+}
+
+function deploy_task() {
+  $args = func_get_args();
+  $name = array_shift($args);
+  if ($args[count($args) - 1] instanceof Closure) {
+    $work = array_pop($args);
+  }
+  else {
+    $work = null;
+  }
+  DrushDeploy\Deploy::$tasks[$name] = $work;
+}
+
+function deploy_before($before_task, $task) {
+  DrushDeploy\Deploy::$before[$before_task][] = $task;
+}
+
+function deploy_after($after_task, $task) {
+  DrushDeploy\Deploy::$after[$after_task][] = $task;
+}
+
+/**
  * Implementation of drush_hook_COMMAND().
  */
-function drush_deploy_callback($command, $alias) {
+function drush_deploy_callback($command, $alias = NULL) {
+  if (empty($alias)) {
+    drush_set_error('DRUSH_DEPLOY_ERROR', dt("Must specify a site alias or group of site aliases!"));
+    return;
+  }
   $alias_settings = drush_sitealias_get_record($alias);
-  $command_parts = explode('-', $command);
-  $method = isset($command_parts[1]) ? $method = $command_parts[1] : $method = 'deploy';
-
+  $method = strpos($command, 'deploy-') === 0 ?  substr($command, 7) : $command;
   $sites = array();
   if (isset($alias_settings['site-list'])) {
     foreach ($alias_settings['site-list'] as $alias) {
