@@ -1,33 +1,45 @@
 <?php
 
-namespace DrushDeploy;
+namespace Drush\Deploy;
 
 class Git {
   // Sets the default command name for this SCM on your *local* machine.
   // Users may override this by setting the scm_command variable.
   public $default_command = "git";
   public $config;
-  public $verbose;
+  public $verbose = FALSE;
 
   function __construct($config) {
     $this->config = $config;
     $this->verbose = drush_get_context('DRUSH_VERBOSE') ? '' : ' -q';
   }
 
-  // When referencing "head", use the branch we want to deploy or, by
-  // default, Git's reference of HEAD (the latest changeset in the default
-  // branch, usually called "master").
+  /**
+   * When referencing "head", use the branch we want to deploy or, by
+   * default, Git's reference of HEAD (the latest changeset in the default
+   * branch, usually called "master").
+   *
+   * @return string
+   */
   function head() {
     return drush_get_option('branch', 'HEAD');
   }
 
+  /**
+   * @return string
+   */
   function origin() {
     return drush_get_option('remote', 'origin');
   }
 
-
-  // Performs a clone on the remote machine, then checkout on the branch
-  // you want to deploy.
+  /**
+   * Performs a clone on the remote machine, then checkout on the branch
+   * you want to deploy.
+   *
+   * @param $revision
+   * @param $destination
+   * @return string
+   */
   function checkout($revision, $destination) {
     $remote = $this->origin();
 
@@ -91,6 +103,7 @@ class Git {
       $execute[] = "git config remote.$remote.fetch +refs/heads/*:refs/remotes/$remote/*";
     }
 
+    $verbose = $this->verbose;
     // since we're in a local branch already, just reset to specified revision rather than merge
     $execute[] = "git fetch $verbose $remote && git fetch --tags $verbose $remote && git reset $verbose --hard $revision";
 
@@ -112,6 +125,11 @@ class Git {
   /**
    * Getting the actual commit id, in case we were passed a tag
    * or partial sha or something - it will return the sha if you pass a sha, too
+   *
+   * @throws Exception
+   * @param $revision
+   * @param bool $local
+   * @return null
    */
   function query_revision($revision, $local = TRUE) {
     $repository = $local ? '.' : $this->config->repository;

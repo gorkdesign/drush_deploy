@@ -1,6 +1,6 @@
 <?php
-namespace DrushDeploy;
-class Deploy extends DrushCommand {
+namespace Drush\Deploy;
+class Deploy extends \Drush\Command {
   public $sites;
   public $application;
   public $repository;
@@ -28,9 +28,11 @@ class Deploy extends DrushCommand {
   public $run_method;
   public $latest_release;
   public $verbose;
+  /*
   public static $tasks = array();
   public static $before = array();
   public static $after = array();
+  */
 
   function __construct($sites) {
     // These variables MUST be set in the client config files. If they are not set,
@@ -52,7 +54,7 @@ class Deploy extends DrushCommand {
     // Maintenance base filename
     $this->maintenance_basename = drush_get_option('maintenance_basename', 'maintenance');
     $this->real_revision = $this->git->query_revision($this->revision, FALSE);
-    $class = 'DrushDeploy\Strategy\\' . $this->deploy_via;
+    $class = __NAMESPACE__ . '\Strategy\\' . $this->deploy_via;
     $this->strategy = new $class($this);
 
     $datetime = new \DateTime("now", new \DateTimeZone("UTC"));
@@ -148,6 +150,11 @@ class Deploy extends DrushCommand {
     $this->run('mkdir -p ' . $dirs_str . ' && chmod g+w ' . $dirs_str);
   }
 
+  /** @command */
+  function check() {
+    $this->strategy->check();
+  }
+
   public function run() {
     $args = func_get_args();
     $commands = array();
@@ -155,21 +162,25 @@ class Deploy extends DrushCommand {
     foreach ($this->sites as $site) {
       $commands[$site['#name']] = $this->__buildCommand($args, $site);
       $backend_options[$site['#name']] = array(
-        'output-label' => str_pad($site['#name'], 0, " ") . ' >>> ',
+        //'output-label' => str_pad($site['#name'], 0, " ") . ' >>> ',
+         //** [drupal04 :: out]
+        'output-label' => '* [' . str_pad($site['#name'], 0, " ") . '] ',
         'output' => TRUE,
       );
     }
-    try {
+    //try {
       $return = _drush_deploy_proc_open($commands, NULL, NULL, $backend_options);
       foreach ($return as $ret) {
-        if (!$ret['code']) {
+        if ($ret['code'] !== 0) {
           throw new CommandException($ret['output']);
         }
       }
-    }
-    catch (CommandException $e) {
-      drush_set_error($e);
-    }
+      /*
+      }
+      catch (CommandException $e) {
+        drush_set_error($e);
+      }
+      */
   }
 
   public function run_once($command, $args = array(), $check_no_release = FALSE) {

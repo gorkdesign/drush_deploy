@@ -1,5 +1,5 @@
 <?php
-namespace DrushDeploy\Strategy;
+namespace Drush\Deploy\Strategy;
 
 /**
  * Implements the deployment strategy which does an SCM checkout on each
@@ -8,9 +8,11 @@ namespace DrushDeploy\Strategy;
 class Checkout extends Remote {
   /**
    * Returns the SCM's checkout command for the revision to deploy.
+   *
+   * @return string
    */
   protected function command() {
-    return $this->git->checkout($this->configuration->revision, $this->configuration->release_path);
+    return $this->git->checkout($this->config->revision, $this->config->release_path);
   }
 }
 

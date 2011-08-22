@@ -1,5 +1,5 @@
 <?php
-namespace DrushDeploy\Strategy;
+namespace Drush\Deploy\Strategy;
 /**
  * An abstract superclass, which forms the base for all deployment
  * strategies which work by grabbing the code from the repository directly
@@ -13,18 +13,13 @@ class Remote extends Base {
    */
   function deploy() {
     $command = $this->command() . ' && ' . $this->mark();
-    $this->configuration->run($command);
+    $this->config->run($command);
   }
 
   function check() {
-  }
-
-
-  /**
-   * Runs the given command, filtering output back through the
-   * handle_data filter of the SCM implementation.
-   */
-  protected function scm_run($command) {
+    $d = parent::check();
+    $d->remote()->command("git");
+    return $d;
   }
 
   /**
@@ -33,14 +28,16 @@ class Remote extends Base {
    * target host in order to perform the deployment.
    */
   protected function command() {
+    throw NotImplementedException("`command' is not implemented by " . __CLASS__);
   }
+
 
   /**
    * Returns the command which will write the identifier of the
    * revision being deployed to the REVISION file on each host.
    */
   protected function mark() {
-    return "(echo " . $this->configuration->revision . " > " . $this->configuration->release_path . "/REVISION)";
+    return "(echo " . $this->config->revision . " > " . $this->config->release_path . "/REVISION)";
   }
 }
 

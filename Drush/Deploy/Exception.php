@@ -1,3 +1,3 @@
 <?php
-namespace DrushDeploy;
+namespace Drush\Deploy;
 class Exception extends \Exception {}
