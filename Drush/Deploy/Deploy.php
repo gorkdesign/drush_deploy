@@ -53,7 +53,7 @@ class Deploy extends \Drush\Command {
 
     // Maintenance base filename
     $this->maintenance_basename = drush_get_option('maintenance_basename', 'maintenance');
-    $this->real_revision = $this->git->query_revision($this->revision, FALSE);
+    $this->real_revision = $this->git->queryRevision($this->revision, FALSE);
     $class = __NAMESPACE__ . '\Strategy\\' . $this->deploy_via;
     $this->strategy = new $class($this);
 
@@ -251,7 +251,7 @@ class Deploy extends \Drush\Command {
    */
   public function update() {
     drush_deploy_transaction($this, array(
-      'update_code',
+      'update-code',
       'symlink'
     ));
   }
@@ -270,29 +270,15 @@ class Deploy extends \Drush\Command {
    *
    * @command
    */
-  public function update_code() {
+  public function updateCode() {
     $this->strategy->deploy();
   }
 
   /**
    * @command
    */
-  public function update_code_rollback() {
+  public function updateCodeRollback() {
     $this->run("rm -rf #{release_path}; true");
-  }
-
-  public function strategy_command() {
-    switch ($this->deploy_via) {
-    case 'checkout':
-      $command = $this->strategy_command() . ' && ' . $this->mark();
-      break;
-    case 'remotecache':
-      $this->update_repository_cache();
-      $this->copy_repository_cache();
-      break;
-    }
-    return $command;
-    //finalize_update
   }
 
   /** @command */

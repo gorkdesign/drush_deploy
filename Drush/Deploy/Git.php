@@ -131,7 +131,7 @@ class Git {
    * @param bool $local
    * @return null
    */
-  function query_revision($revision, $local = TRUE) {
+  function queryRevision($revision, $local = TRUE) {
     $repository = $local ? '.' : $this->config->repository;
     if (preg_match('/^[0-9a-f]{40}$/', $revision)) return $revision;
     $command = 'git ls-remote ' . $repository . ' ' . $revision;

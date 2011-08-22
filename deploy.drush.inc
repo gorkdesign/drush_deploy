@@ -31,7 +31,7 @@ function deploy_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'config' => 'deploy',
   );
-  //spl_autoload_register('drush_autoload_class');
+
   $loader = new DrushAutoLoader();
   $loader->registerNamespace('Drush', __DIR__);
   $loader->registerNamespace('Drush\\Deploy', __DIR__);
@@ -114,8 +114,8 @@ function drush_deploy_transaction(&$obj = NULL, $commands) {
       }
       catch (CommandException $e) {
         foreach ($commands as $ri => $rcmd) {
-          if (is_callable(array($obj, $rcmd . '_rollback'))) {
-            $obj::runCommand($obj, $rcmd . '_rollback');
+          if (is_callable(array($obj, $rcmd . '-rollback'))) {
+            $obj::runCommand($obj, $rcmd . '-rollback');
           }
           if ($ri >= $i) break;
           $ri++;

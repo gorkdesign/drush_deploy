@@ -12,34 +12,37 @@ class Command {
   public $classname = NULL;
 
   public function className() {
-    if (empty($this->class_name)) {
+    if (empty($this->classname)) {
       $class = get_called_class();
-      $ref = new \ReflectionClass($this->class);
-      $this->class_name = $this->ref->getShortName();
+      $ref = new \ReflectionClass($class);
+      $this->classname = $ref->getShortName();
     }
+    return $this->classname;
   }
 
-  public function runCommand($obj, $cmd) {
+  public static function runCommand($obj, $cmd) {
+    $class = $obj->className();
+    $class = strtolower($class);
     $before = drush_get_option('before', array());
     $after = drush_get_option('after', array());
-    $short_cmd = $cmd;
-    if (strpos($cmd, 'deploy_') === 0) {
-      $short_cmd = substr($cmd, 7);
-    }
+    // Full command name.
+    $command_name = $cmd == $class ? $cmd : $class . '-' . $cmd;
+    // Convert command names to camelcase method names.
+    $method = preg_replace("/-([a-z])/e", "strtoupper('\\1')", $cmd);
 
     // See if there are any before tasks to run before calling the command callback.
-    if (isset($before[$short_cmd])) {
-      foreach($before[$short_cmd] as $task) {
+    if (isset($before[$command_name])) {
+      foreach($before[$command_name] as $task) {
         $task($obj);
       }
     }
 
     // Call command callback.
-    $ret = $obj->{$cmd}();
+    $ret = $obj->{$method}();
 
     // Call any after tasks.
-    if (isset($after[$short_cmd])) {
-      foreach($after[$short_cmd] as $task) {
+    if (isset($after[$command_name])) {
+      foreach($after[$command_name] as $task) {
         $task($obj);
       }
     }
@@ -47,23 +50,22 @@ class Command {
     return $ret;
   }
 
-  static function getCommands() {
+  public static function getCommands() {
     $class = get_called_class();
     $ref = new \ReflectionClass($class);
-    $blah = self::$functions;
     $class_name = $ref->getShortName();
     $annotations = self::getClassAnnotations($ref);
 
     $commands = array();
-     foreach($annotations[$class_name] as $method_name => $a) {
-       if (isset($a['command'])) {
-         $commands[] = $method_name;
-       }
-     }
-     return $commands;
-   }
+    foreach($annotations[$class_name] as $method_name => $a) {
+      if (isset($a['command'])) {
+        $commands[] = $method_name;
+      }
+    }
+    return $commands;
+  }
 
-  static function getFunctions($reset = FALSE) {
+  public static function getFunctions($reset = FALSE) {
     if (empty(self::$functions) || $reset === FALSE) {
       $functions = get_defined_functions();
       self::$functions = $functions['user'];
@@ -71,7 +73,7 @@ class Command {
     return self::$functions;
   }
 
-  static function getTasks() {
+  public static function getTasks() {
     $class = get_called_class();
     $ref = new \ReflectionClass($class);
     $namespace = $ref->getNamespaceName();
