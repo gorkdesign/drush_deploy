@@ -6,6 +6,7 @@ class Deploy extends \Drush\Command {
   public $repository;
   public $deploy_via;
   public $deploy_to;
+  public $docroot;
   public $revision;
   public $maintenance_basename;
   public $real_revision;
@@ -48,7 +49,9 @@ class Deploy extends \Drush\Command {
     $this->git = new Git($this);
     $this->deploy_via = drush_get_option('deploy_via', 'Checkout');
 
-    $this->deploy_to = drush_get_option('deploy-to', '~/deploy');
+    $this->deploy_to = drush_get_option('deploy-to', "~/deploy/" . $this->application);
+
+    $this->docroot = drush_get_option('docroot', NULL);
     $this->revision = drush_get_option('branch', 'HEAD');
 
     // Maintenance base filename
@@ -157,30 +160,23 @@ class Deploy extends \Drush\Command {
 
   public function run() {
     $args = func_get_args();
+    $args = is_array($args[0]) ? $args[0] : $args;
     $commands = array();
-    $backend_options= array();
+    $backend_options = array();
     foreach ($this->sites as $site) {
       $commands[$site['#name']] = $this->__buildCommand($args, $site);
       $backend_options[$site['#name']] = array(
-        //'output-label' => str_pad($site['#name'], 0, " ") . ' >>> ',
-         //** [drupal04 :: out]
         'output-label' => '* [' . str_pad($site['#name'], 0, " ") . '] ',
         'output' => TRUE,
       );
     }
-    //try {
-      $return = _drush_deploy_proc_open($commands, NULL, NULL, $backend_options);
-      foreach ($return as $ret) {
-        if ($ret['code'] !== 0) {
-          throw new CommandException($ret['output']);
-        }
+    $return = _drush_deploy_proc_open($commands, NULL, NULL, $backend_options);
+    foreach ($return as $ret) {
+      if ($ret['code'] !== 0) {
+        //throw new CommandException($ret['output']);
+        throw new Exception($ret['output']);
       }
-      /*
-      }
-      catch (CommandException $e) {
-        drush_set_error($e);
-      }
-      */
+    }
   }
 
   public function run_once($command, $args = array(), $check_no_release = FALSE) {
@@ -193,7 +189,7 @@ class Deploy extends \Drush\Command {
         throw new CommandException(implode("\n", drush_shell_exec_output()));
       }
     }
-    catch (CommandException $e) {
+    catch (\Drush\CommandException $e) {
       drush_set_error($e);
     }
   }
@@ -210,12 +206,16 @@ class Deploy extends \Drush\Command {
     }
   }
 
-  //function __buildCommand($command, $args = array(), $site) {
+  public function drush() {
+    $args = func_get_args();
+    $args[0] = 'drush --root=' . $this->docroot . ' '. $args[0];
+    $this->run($args);
+  }
+
   protected function __buildCommand($command, $site) {
     if (is_array($command)) {
       $command = call_user_func_array('sprintf', $command);
     }
-    // TODO: make this parallel.
     $hostname = isset($site['remote-host']) ? drush_escapeshellarg($site['remote-host'], "LOCAL") : null;
     $username = isset($site['remote-user']) ? drush_escapeshellarg($site['remote-user'], "LOCAL") . "@" : '';
     $ssh_options = isset($site['ssh-options']) ? $site['ssh-options'] : drush_get_option('ssh-options', "-o PasswordAuthentication=no");
@@ -278,7 +278,7 @@ class Deploy extends \Drush\Command {
    * @command
    */
   public function updateCodeRollback() {
-    $this->run("rm -rf #{release_path}; true");
+    $this->run("rm -rf %s; true", $this->release_path);
   }
 
   /** @command */
@@ -361,7 +361,7 @@ class Deploy extends \Drush\Command {
    * @command
    */
   public function cleanup() {
-    $count = drush_get_option('keep_releases', 5);
+    $count = drush_get_option('keep-releases', 5);
     $total = count($this->releases());
     if ($count >= count($this->releases())) {
       drush_log("no old releases to clean up", 'error');
@@ -391,11 +391,6 @@ class Deploy extends \Drush\Command {
   function abort($message) {
     drush_set_error('DRUSH_DEPLOY_ERROR', $message);
   }
-/*
-  static function addTask($name, $closure) {
-    self::$tasks[$name] = $closure;
-  }
-*/
 }
 
 class CommandException extends \Exception {}

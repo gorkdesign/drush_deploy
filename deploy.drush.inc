@@ -86,7 +86,7 @@ function drush_deploy_callback($command, $alias = NULL) {
     return;
   }
   $alias_settings = drush_sitealias_get_record($alias);
-  $method = strpos($command, 'deploy-') === 0 ?  substr($command, 7) : $command;
+  $method = strpos($command, 'deploy-') === 0 ? substr($command, 7) : $command;
   $sites = array();
   if (isset($alias_settings['site-list'])) {
     foreach ($alias_settings['site-list'] as $alias) {
@@ -99,7 +99,7 @@ function drush_deploy_callback($command, $alias = NULL) {
 
   $deploy = new \Drush\Deploy\Deploy($sites);
   try {
-    $blah = $deploy::runCommand($deploy, $method);
+    $deploy->runCommand($deploy, $method);
   }
   catch (CommandException $e) {
     drush_set_error($e->getMessage());
@@ -110,12 +110,17 @@ function drush_deploy_transaction(&$obj = NULL, $commands) {
   if ($obj) {
     foreach ($commands as $i => $cmd) {
       try {
-        $obj::runCommand($obj, $cmd);
+        $obj->runCommand($obj, $cmd);
       }
-      catch (CommandException $e) {
+      //catch (CommandException $e) {
+      catch (Exception $e) {
         foreach ($commands as $ri => $rcmd) {
-          if (is_callable(array($obj, $rcmd . '-rollback'))) {
-            $obj::runCommand($obj, $rcmd . '-rollback');
+          try {
+            $obj->runCommand($obj, $rcmd . '-rollback');
+          }
+          //catch (CommandException $e) {
+          catch (Exception $e) {
+            drush_set_error($e);
           }
           if ($ri >= $i) break;
           $ri++;

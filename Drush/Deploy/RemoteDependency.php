@@ -45,7 +45,7 @@ class RemoteDependency {
     try {
       $this->config->run($command);
     }
-    catch (CommandException $e) {
+    catch (Exception $e) {
       $this->success = FALSE;
       drush_set_error($e->getMessage());
     }

@@ -42,7 +42,8 @@ class RemoteCache extends Remote {
     try {
       $this->config->run($command);
     }
-    catch (CommandException $e) {
+    //catch (CommandException $e) {
+    catch (\Drush\Deploy\CommandException $e) {
       drush_set_error($e->getMessage());
     }
   }

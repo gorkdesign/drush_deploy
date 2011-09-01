@@ -10,6 +10,7 @@ class Command {
   public static $after = array();
   public static $tasks = array();
   public $classname = NULL;
+  public $commands = NULL;
 
   public function className() {
     if (empty($this->classname)) {
@@ -20,7 +21,12 @@ class Command {
     return $this->classname;
   }
 
-  public static function runCommand($obj, $cmd) {
+  public function runCommand($obj, $cmd) {
+    static $commands = array();
+    if (empty($commands)) {
+      $commands = drush_get_context('DRUSH_COMMANDS');
+      $commands = !empty($commands) ? array_keys($commands) : $commands;
+    }
     $class = $obj->className();
     $class = strtolower($class);
     $before = drush_get_option('before', array());
@@ -33,17 +39,30 @@ class Command {
     // See if there are any before tasks to run before calling the command callback.
     if (isset($before[$command_name])) {
       foreach($before[$command_name] as $task) {
-        $task($obj);
+        // If it's in the list of drush commands, call it as one.
+        if (in_array($task, $commands)) {
+          $this->drush($task);
+        }
+        else {
+          $task($obj);
+        }
       }
     }
 
     // Call command callback.
-    $ret = $obj->{$method}();
+    if (is_callable(array($obj, $method))) {
+      $ret = $obj->{$method}();
+    }
 
     // Call any after tasks.
     if (isset($after[$command_name])) {
       foreach($after[$command_name] as $task) {
-        $task($obj);
+        if (in_array($task, $commands)) {
+          $this->drush($task);
+        }
+        else {
+          $task($obj);
+        }
       }
     }
 
