@@ -191,7 +191,7 @@ class DrushAutoLoader {
       }
     }
     else {
-      $file = $this->findFile;
+      $file = $this->findFile($class);
     }
 
     return $file;
