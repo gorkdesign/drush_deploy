@@ -42,3 +42,25 @@ To then deploy the latest from the master brance of git@github.com:blah/site_rep
 
 * php 5.3
 * non-windows OS
+
+
+## CONFIGURATION OPTIONS
+
+Additional configuration options for your recipe can be included in your deploy.drushrc.php file as follows:
+
+
+        <?php
+        // Initialize, sync, and update submodules with 'git submodule' commands
+        $options['git_enable_submodules'] = TRUE;
+        // Run additional tasks after the 'current' symlink has been updated
+        $options['after']['deploy-symlink'][] = 'my_custom_task';
+
+        /**
+         * The task needs to be defined with a @task "decorator" in the comment block preceding it
+         * @task
+         */
+        function my_custom_task($d) {
+          $d->run("ln -s /var/www/mysite.com/deploy/shared/settings.php %s/sites/default/settings.php", $d->latest_release());
+          $d->run("ln -s /var/www/mysite.com/deploy/shared/files %s/sites/default/files", $d->latest_release());
+        }
+        ?>
