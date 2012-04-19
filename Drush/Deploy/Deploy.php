@@ -47,7 +47,7 @@ class Deploy extends \Drush\Command {
     }
 
     $this->git = new Git($this);
-    $this->deploy_via = drush_get_option('deploy_via', 'Checkout');
+    $this->deploy_via = drush_get_option('deploy-via', 'Checkout');
 
     $this->deploy_to = drush_get_option('deploy-to', "~/deploy/" . $this->application);
 
