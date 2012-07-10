@@ -49,7 +49,7 @@ abstract class Base {
    * The revision to deploy. Must return a real revision identifier,
    * and not a pseudo-id.
    */
-  private function revision() {
-    $this->config->real_revision;
+  protected function revision() {
+    return $this->config->real_revision;
   }
 }

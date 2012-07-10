@@ -37,8 +37,8 @@ class RemoteCache extends Remote {
     $repo_cache = $this->repositoryCache();
     drush_log("updating the cached checkout on all servers");
     $command = 'if [ -d ' . $repo_cache . ' ]; then ';
-    $command .= $this->git->sync($this->config->revision, $repo_cache) . ';';
-    $command .= 'else ' . $this->git->checkout($this->config->revision, $repo_cache) . ';fi';
+    $command .= $this->git->sync($this->revision(), $repo_cache) . ';';
+    $command .= 'else ' . $this->git->checkout($this->revision(), $repo_cache) . ';fi';
     try {
       $this->config->run($command);
     }

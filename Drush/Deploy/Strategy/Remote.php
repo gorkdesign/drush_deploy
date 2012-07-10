@@ -37,7 +37,7 @@ class Remote extends Base {
    * revision being deployed to the REVISION file on each host.
    */
   protected function mark() {
-    return "(echo " . $this->config->revision . " > " . $this->config->release_path . "/REVISION)";
+    return "(echo " . $this->revision() . " > " . $this->config->release_path . "/REVISION)";
   }
 }
 

@@ -12,7 +12,7 @@ class Checkout extends Remote {
    * @return string
    */
   protected function command() {
-    return $this->git->checkout($this->config->revision, $this->config->release_path);
+    return $this->git->checkout($this->revision(), $this->config->release_path);
   }
 }
 
