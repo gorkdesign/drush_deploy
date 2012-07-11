@@ -97,6 +97,10 @@ function drush_deploy_callback($command, $alias = NULL) {
     $sites[] = $alias_settings;
   }
 
+  foreach ($sites as $site) {
+    drush_set_config_options('alias', $site);
+  }
+
   $deploy = new \Drush\Deploy\Deploy($sites);
   try {
     $deploy->runCommand($deploy, $method);
