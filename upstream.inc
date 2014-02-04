@@ -70,14 +70,15 @@ function _drush_deploy_proc_open($cmd, $post_options = NULL, $context = NULL, $b
             if (!feof($current_process['pipes'][$pipe]) && !$info['timed_out']) {
               $string = fread($current_process['pipes'][$pipe], 4096);
               $output_end_pos = strpos($string, 'DRUSH_BACKEND_OUTPUT_START>>>');
+              $trailing_remainder = '';
               if ($output_end_pos !== FALSE) {
                 $trailing_string = substr($string, 0, $output_end_pos);
-                drush_backend_parse_packets($trailing_string, $bucket[$site]['backend_opts']);
+                drush_backend_parse_packets($trailing_string, $trailing_remainder, $bucket[$site]['backend_opts']);
                 _drush_backend_print_output($trailing_string, $bucket[$site]['backend_opts']);
                 $end_of_output = TRUE;
               }
               if (!$end_of_output) {
-                drush_backend_parse_packets($string, $bucket[$site]['backend_opts']);
+                drush_backend_parse_packets($string, $trailing_remainder, $bucket[$site]['backend_opts']);
                 // Pass output through.
                 _drush_backend_print_output($string, $bucket[$site]['backend_opts']);
                 $outputted = TRUE;
