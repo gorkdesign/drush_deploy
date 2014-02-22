@@ -359,15 +359,16 @@ class Deploy extends \Drush\Command {
    * for your environment, set the :use_sudo variable to false instead.
    *
    * @command
+   * @description Clean up old releases.
    */
   public function cleanup() {
     $count = drush_get_option('keep-releases', 5);
     $total = count($this->releases());
     if ($count >= count($this->releases())) {
-      drush_log("no old releases to clean up", 'error');
+      drush_log("No old releases to clean up", 'error');
     }
     else {
-      drush_log("keeping " . $count . " of " . count($this->releases()) . " deployed releases");
+      drush_log("Keeping " . $count . " of " . count($this->releases()) . " deployed releases", 'success');
       $directories = array_slice($this->releases(), 0, $total - $count);
       $directories = $this->releases_path . '/' . implode(" " . $this->releases_path . '/', $directories);
 
