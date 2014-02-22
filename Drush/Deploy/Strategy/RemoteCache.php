@@ -49,7 +49,7 @@ class RemoteCache extends Remote {
   }
 
   private function copyRepositoryCache() {
-    drush_log(dt("copying the cached version to %s", $this->config->release_path));
+    drush_log("copying the cached version to %s", $this->config->release_path);
     $exclude = $this->copyExclude();
       if (empty($exclude)) {
         try {
