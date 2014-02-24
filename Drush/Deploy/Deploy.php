@@ -387,8 +387,12 @@ class Deploy extends \Drush\Command {
     else {
       drush_log("Keeping " . $count . " of " . count($this->releases()) . " deployed releases", 'success');
       $directories = array_slice($this->releases(), 0, $total - $count);
+
+      foreach ($directories as $directory) {
+      drush_log("Removing deployment directory : " . $directory, 'success');
+      }
+
       $directories = $this->releases_path . '/' . implode(" " . $this->releases_path . '/', $directories);
-      drush_log("Removing" . $directories, 'success');
       $this->run("rm -rf $directories");
     }
   }
