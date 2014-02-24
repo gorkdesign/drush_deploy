@@ -21,7 +21,7 @@ function deploy_drush_help($section) {
 function deploy_drush_command() {
   $items = array();
   $items['deploy'] = array(
-    'description' => '',
+    'description' => 'Deploying a site to a remote server.',
     'arguments' => array(
     ),
     'options' => array(
@@ -37,9 +37,9 @@ function deploy_drush_command() {
   $loader->registerNamespace('Drush\\Deploy', __DIR__);
   $loader->register();
 
-  foreach(\Drush\Deploy\Deploy::getCommands() as $command) {
+  foreach(\Drush\Deploy\Deploy::getCommands() as $command => $description) {
     $items['deploy-' . $command] = array(
-      'description' => '',
+      'description' => $description,
       'arguments' => array(),
       'options' => array(),
       'bootstrap' => DRUSH_BOOTSTRAP_DRUSH, // No bootstrap at all.
@@ -90,6 +90,7 @@ function drush_deploy_callback($command, $alias = NULL) {
   $sites = array();
   if (isset($alias_settings['site-list'])) {
     foreach ($alias_settings['site-list'] as $alias) {
+      drush_log('Loading alias '.$alias, 'success');
       $sites[] = drush_sitealias_get_record($alias);
     }
   }

@@ -33,6 +33,14 @@ Deploy stores it's settings in a deploy.drushrc.php file, which will go in the s
         $options['docroot'] = '/var/www/drupal';
         ?>
 
+### Setup
+
+First setup the web servers with running:
+
+    drush deploy-setup @live
+
+### Deployment
+
 To then deploy the latest from the master brance of git@github.com:blah/site_repo.git to the web servers web1.blah.com and web2.blah.com, you would do:
 
     drush deploy @blah
