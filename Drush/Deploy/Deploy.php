@@ -61,7 +61,8 @@ class Deploy extends \Drush\Command {
     $this->strategy = new $class($this);
 
     $datetime = new \DateTime("now", new \DateTimeZone("UTC"));
-    $this->release_name = $datetime->format("YmdHis");
+    $format = drush_get_option('release_name_pattern', 'YmdHis');
+    $this->release_name = $datetime->format($format);
 
     $this->sites = $sites;
     $this->current_dir = "current";
