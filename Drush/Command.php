@@ -78,7 +78,7 @@ class Command {
     $commands = array();
     foreach($annotations[$class_name] as $method_name => $a) {
       if (isset($a['command'])) {
-        $commands[] = $method_name;
+        $commands[$method_name]['description'] = $a['description'][0];
       }
     }
     return $commands;

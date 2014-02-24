@@ -129,7 +129,8 @@ class Deploy extends \Drush\Command {
   }
 
   /**
-   * Deploys your project. This calls both `update' and `restart'. Note that \
+   * @description Deploys your project.
+   * This calls both `update' and `restart'. Note that \
    * this will generally only work for applications that have already been deployed \
    * once. For a "cold" deploy, you'll want to take a look at the `deploy:cold' \
    * task, which handles the cold start specifically.
@@ -141,7 +142,7 @@ class Deploy extends \Drush\Command {
   }
 
   /**
-   * Prepares one or more servers for deployment.
+   * @description Prepares one or more servers for deployment.
    * It is safe to run this task on servers that have already been set up; it
    * will not destroy any deployed revisions or data.
    *
@@ -153,7 +154,10 @@ class Deploy extends \Drush\Command {
     $this->run('mkdir -p ' . $dirs_str . ' && chmod g+w ' . $dirs_str);
   }
 
-  /** @command */
+  /**
+  * @description Performs a check on the remote hosts to determine if everything is setup.
+  * @command
+  */
   function check() {
     $this->strategy->check();
   }
@@ -247,13 +251,16 @@ class Deploy extends \Drush\Command {
    * you will want to call `deploy' instead of `update', but `update' can be \
    * handy if you want to deploy, but not immediately restart your application.
    *
-   * @command
+   *
    */
   public function update() {
+    drush_log('Starting deployment at '. date('c'), 'success');
     drush_deploy_transaction($this, array(
       'update-code',
       'symlink'
     ));
+    drush_log('Finishing deployment at '. date('c'), 'success');
+
   }
 
   /**
@@ -269,6 +276,7 @@ class Deploy extends \Drush\Command {
    * defaults to :checkout).
    *
    * @command
+   * @description Copies your project to the remote servers.
    */
   public function updateCode() {
     $this->strategy->deploy();
@@ -276,24 +284,31 @@ class Deploy extends \Drush\Command {
 
   /**
    * @command
+   * @description
    */
   public function updateCodeRollback() {
     $this->run("rm -rf %s; true", $this->release_path);
   }
 
-  /** @command */
-  public function finalize_update() {
-    return;
-  }
+  // /** @command */
+  // public function finalize_update() {
+  //   return;
+  // }
 
-  /** @command */
+  /**
+  * @command
+  * @description rebuilds the symlink
+   */
   public function symlink() {
     //$this->run('iidf -h');
     $cmd = sprintf("rm -f %s && ln -s %s %s", $this->current_path, $this->latest_release(), $this->current_path);
     $this->run($cmd);
   }
 
-  /** @command */
+  /**
+  * @command
+  * @description Rolls back by switching the symlink back to the previous release.
+  */
   public function symlink_rollback() {
     if ($this->previous_release) {
       $cmd = sprintf("echo 'rm -f %s; ln -s %s %s; true'", $this->current_path, $this->previous_release, $this->current_path);
@@ -310,6 +325,7 @@ class Deploy extends \Drush\Command {
    * back where you were, on the previously deployed version.
    *
    * @command
+   * @description Rolls back to a previous version and restarts.
    */
   public function rollback() {
     $this->__rollback_revision();
@@ -352,14 +368,14 @@ class Deploy extends \Drush\Command {
   }
 
   /**
-   * Clean up old releases. By default, the last 5 releases are kept on each
+   * @description Clean up old releases.
+   * By default, the last 5 releases are kept on each
    * server (though you can change this with the keep_releases variable). All
    * other deployed revisions are removed from the servers. By default, this
    * will use sudo to clean up the old releases, but if sudo is not available
    * for your environment, set the :use_sudo variable to false instead.
    *
    * @command
-   * @description Clean up old releases.
    */
   public function cleanup() {
     $count = drush_get_option('keep-releases', 5);
@@ -371,7 +387,7 @@ class Deploy extends \Drush\Command {
       drush_log("Keeping " . $count . " of " . count($this->releases()) . " deployed releases", 'success');
       $directories = array_slice($this->releases(), 0, $total - $count);
       $directories = $this->releases_path . '/' . implode(" " . $this->releases_path . '/', $directories);
-
+      drush_log("Removing" . $directories, 'success');
       $this->run("rm -rf $directories");
     }
   }
