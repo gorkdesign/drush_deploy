@@ -28,7 +28,7 @@ function deploy_drush_command() {
     ),
     'examples' => array(
     ),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_SITE,
     'config' => 'deploy',
   );
 
