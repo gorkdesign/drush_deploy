@@ -12,7 +12,11 @@ class Remote extends Base {
    * mark file to each host.
    */
   function deploy() {
-    $command = $this->command() . ' && ' . $this->mark();
+    throw NotImplementedException("`deploy' is not implemented by " . __CLASS__);
+    $commands[] = $this->command();
+    $commands[] = $this->mark();
+    $commands = array_filter($commands);
+    $command = implode(' && ', $commands);
     $this->config->run($command);
   }
 
@@ -31,13 +35,5 @@ class Remote extends Base {
     throw NotImplementedException("`command' is not implemented by " . __CLASS__);
   }
 
-
-  /**
-   * Returns the command which will write the identifier of the
-   * revision being deployed to the REVISION file on each host.
-   */
-  protected function mark() {
-    return "(echo " . $this->revision() . " > " . $this->config->release_path . "/REVISION)";
-  }
 }
 

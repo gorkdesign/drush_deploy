@@ -7,6 +7,7 @@ class Deploy extends \Drush\Command {
   public $deploy_via;
   public $deploy_to;
   public $docroot;
+  public $root;
   public $revision;
   public $maintenance_basename;
   public $real_revision;
@@ -54,11 +55,15 @@ class Deploy extends \Drush\Command {
     $this->docroot = drush_get_option('docroot', NULL);
     $this->revision = drush_get_option('branch', 'HEAD');
 
+    $this->root = drush_get_option('root', NULL); 
+
     // Maintenance base filename
     $this->maintenance_basename = drush_get_option('maintenance_basename', 'maintenance');
-    $this->real_revision = $this->git->queryRevision($this->revision, FALSE);
+
     $class = __NAMESPACE__ . '\Strategy\\' . $this->deploy_via;
     $this->strategy = new $class($this);
+
+    $this->deploy_tasks = $this->strategy->getDeployTasks();
 
     $datetime = new \DateTime("now", new \DateTimeZone("UTC"));
     $format = drush_get_option('release_name_pattern', 'YmdHis');
@@ -256,10 +261,7 @@ class Deploy extends \Drush\Command {
    */
   public function update() {
     drush_log('Starting deployment at '. date('c'), 'success');
-    drush_deploy_transaction($this, array(
-      'update-code',
-      'symlink'
-    ));
+    drush_deploy_transaction($this, $this->deploy_tasks);
     drush_log('Finishing deployment at '. date('c'), 'success');
 
   }

@@ -50,6 +50,17 @@ abstract class Base {
    * and not a pseudo-id.
    */
   protected function revision() {
+    if (!isset($this->config->real_revision)) {
+      $this->config->real_revision = $this->git->queryRevision($this->config->revision, FALSE);
+    }
     return $this->config->real_revision;
   }
+
+  /**
+   * Defines which deploy tasks that should be executed when a deployment
+   * with this deployment strategy happens.
+   */
+  function getDeployTasks() {
+    return array('update-code', 'symlink');
+  }  
 }

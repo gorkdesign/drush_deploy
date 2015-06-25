@@ -69,6 +69,37 @@ class Git {
   }
 
   /**
+   * Performs a pull in the Drupal root folder
+   *
+   * @param $revision
+   * @param $destination
+   * @return string
+   */
+  function pull($revision, $destination) {
+    $remote = $this->origin();
+
+    $args = array();
+    if ($remote != 'origin') $args[] = "-o #{remote}";
+
+    if ($depth = drush_get_option('git_shallow_clone', FALSE)) {
+      $args[] = "--depth $depth";
+    }
+
+    $execute = array();
+    $verbose = $this->verbose;
+    $execute[] = "cd $destination && git pull $verbose $remote $revision";
+
+    if (drush_get_option('git_enable_submodules', FALSE)) {
+      $execute[] = "git submodule $verbose init";
+      $execute[] = "git submodule $verbose sync";
+      $execute[] = "git submodule $verbose update --init --recursive";
+    }
+
+    $cmd = implode(' && ', $execute);
+    return $cmd;
+  }
+
+  /**
    * An expensive export. Performs a checkout as above, then
    * removes the repo.
    *
@@ -109,7 +140,6 @@ class Git {
 
     if (drush_get_option('git_enable_submodules', FALSE)) {
       $execute[] = "git submodule $verbose init";
-      $execute[] = "for mod in `git submodule status | awk '{ print $2 }'`; do git config -f .git/config submodule.\${mod}.url `git config -f .gitmodules --get submodule.\${mod}.url` && echo Synced \$mod; done";
       $execute[] = "git submodule $verbose sync";
       $execute[] = "git submodule $verbose update --init --recursive";
     }

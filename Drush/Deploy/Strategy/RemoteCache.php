@@ -49,7 +49,7 @@ class RemoteCache extends Remote {
   }
 
   private function copyRepositoryCache() {
-    drush_log("copying the cached version to %s", $this->config->release_path);
+    drush_log("copying the cached version to " . $this->config->release_path);
     $exclude = $this->copyExclude();
       if (empty($exclude)) {
         try {
@@ -72,5 +72,14 @@ class RemoteCache extends Remote {
       }
     }
   }
+
+  /**
+   * Returns the command which will write the identifier of the
+   * revision being deployed to the REVISION file on each host.
+   */
+  protected function mark() {
+    return "(echo " . $this->revision() . " > " . $this->config->release_path . "/REVISION)";
+  }
+
 }
 
