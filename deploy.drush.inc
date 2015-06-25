@@ -119,6 +119,7 @@ function drush_deploy_transaction(&$obj = NULL, $commands) {
       }
       //catch (CommandException $e) {
       catch (Exception $e) {
+        drush_set_error("Error: '" . $e->getMessage() . "' starting rollback...");
         foreach ($commands as $ri => $rcmd) {
           try {
             $obj->runCommand($obj, $rcmd . '-rollback');
