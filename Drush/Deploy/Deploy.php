@@ -189,11 +189,13 @@ class Deploy extends \Drush\Command {
     }
   }
 
-  public function run_once($command, $args = array(), $check_no_release = FALSE) {
+  public function run_once() {
+    $args = func_get_args();
+    $args = is_array($args[0]) ? $args[0] : $args;
     $site = $this->sites[0];
-    $cmd = $this->__buildCommand($command, $site);
+    $cmd = $this->__buildCommand($args, $site);
     try {
-      if (!drush_shell_exec($cmd, $args)) {
+      if (!drush_shell_exec($cmd)) {
         $output = drush_shell_exec_output();
         drush_print_r($output);
         throw new CommandException(implode("\n", drush_shell_exec_output()));
