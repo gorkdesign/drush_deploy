@@ -86,7 +86,11 @@ class Git {
     }
 
     $execute = array();
+    $args_str = implode(' ', $args);
+    $repo = $this->config->repository;
     $verbose = $this->verbose;
+    $execute[] = 'mkdir -p ' . $destination;
+    $execute[] = "if [ ! -d " . $destination . "/.git ]; then git clone $verbose $args_str $repo $destination;fi ";
     $execute[] = "cd $destination && git pull $verbose $remote $revision";
 
     if (drush_get_option('git_enable_submodules', FALSE)) {
