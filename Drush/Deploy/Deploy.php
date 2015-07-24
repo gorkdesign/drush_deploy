@@ -84,7 +84,12 @@ class Deploy extends \Drush\Command {
 
   function latest_release() {
     if (!$this->latest_release) {
-      $this->latest_release = file_exists($this->release_name) ? $this->release_path : $this->current_release();
+      if (method_exists($this->strategy, 'getLatestRelease')) {
+        $this->latest_release = $this->strategy->getLatestRelease();
+      }
+      else {
+        $this->latest_release = file_exists($this->release_name) ? $this->release_path : $this->current_release();
+      }
     }
     return $this->latest_release;
   }

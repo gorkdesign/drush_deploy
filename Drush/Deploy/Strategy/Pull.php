@@ -29,5 +29,12 @@ class Pull extends Remote {
     return array('update-code');
   }  
 
+  /**
+   * Pull Strategy doesn't have releases, so the "lastest release" is the root directory
+   */
+  function getLatestRelease(){
+    return $this->config->root;
+  }
+
 }
 
