@@ -69,6 +69,31 @@ class Git {
   }
 
   /**
+   * Performs a clone on the remote machine
+   *
+   * @param $revision
+   * @param $destination
+   * @return string
+   */
+  function clone_only($revision, $destination) {
+    $remote = $this->origin();
+
+    $args = array();
+    if ($remote != 'origin') $args[] = "-o #{remote}";
+
+    if ($depth = drush_get_option('git_shallow_clone', FALSE)) {
+      $args[] = "--depth $depth";
+    }
+
+    $args_str = implode(' ', $args);
+    $repo = $this->config->repository;
+    $verbose = $this->verbose;
+    $cmd = "git clone $verbose $args_str -b $revision $repo $destination";
+
+    return $cmd;
+  }
+
+  /**
    * Performs a pull in the Drupal root folder
    *
    * @param $revision

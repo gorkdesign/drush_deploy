@@ -12,10 +12,16 @@ class Pull extends Remote {
    * @return string
    */
   function deploy() {
-    $command = $this->git->pull($this->config->revision, $this->config->root);
+
+    $command_clone = 'cd ' . $this->config->root . ' && git rev-parse --is-inside-work-tree > /dev/null 2>&1; ';
+    $command_clone .= 'if [ "$?" -ne 0 ]; then ';
+    $command_clone .= $this->git->clone_only($this->config->revision, $this->config->root) . ';fi; ';
+
+    $command_pull = $this->git->pull($this->config->revision, $this->config->root);
 
     try {
-      $this->config->run($command);
+      $this->config->run($command_clone);
+      $this->config->run($command_pull);
     }
     catch (CommandException $e) {
       drush_set_error($e->getMessage());
