@@ -402,7 +402,7 @@ class Deploy extends \Drush\Command {
       }
 
       $directories = $this->releases_path . '/' . implode(" " . $this->releases_path . '/', $directories);
-      $this->run("rm -rf $directories");
+      $this->run("chmod ug+w -R $directories && rm -rf $directories");
     }
   }
 

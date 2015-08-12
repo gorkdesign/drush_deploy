@@ -112,7 +112,7 @@ class Git {
 
     $execute = array();
     $verbose = $this->verbose;
-    $execute[] = "cd $destination && git pull $verbose $remote $revision";
+    $execute[] = "cd $destination && chmod ug+w -R . && git pull $verbose $remote $revision";
 
     if (drush_get_option('git_enable_submodules', FALSE)) {
       $execute[] = "git submodule $verbose init";
