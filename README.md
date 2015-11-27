@@ -160,7 +160,7 @@ First setup the web servers with running:
 ### Deployment
 
 * To then deploy the latest from the **master** branch of <b> git@github.com:blah/site_repo.git</b>
-to the web servers web1.blah.com and web2.blah.com, you would do:
+to the web servers <b>web1.blah.comh</b> and <b>web2.blah.com</b>, you would do:
 
     `drush deploy @blah`
 
