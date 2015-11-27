@@ -10,25 +10,8 @@ This project will **not** help you deploy content. For that, check out the [Depl
 
 ## USAGE
 
-* All this will suppose your Drupal install is in a folder named deploy at the root of the
-git repository. Update paths if needed.
-
-* Deploy stores its settings in a deploy.drushrc.php file, which will go in the same
-locations as your drushrc.php and aliases.drushrc.php. Here is the minimal configuration
-needed to get started:
-
-		<?php
-        $options['application'] = 'blah';
-        $options['deploy-repository'] = 'git@github.com:blah/site_repo.git';
-        $options['branch'] = "master";
-        $options['keep-releases'] = 3;
-        $options['deploy-via'] = 'RemoteCache';
-		$options['docroot'] = '/var/www/deploy';
-        $options['deploy-to'] = '/var/www/deploy';
-        ?>
-
-* You define the servers you want to deploy to using drush site aliases. For example,
-you could put the following in ~/.drush/blah.aliases.drushrc.php :
+* You define the servers you want to deploy to using drush site alias groups. 
+For example, you could put the folowing in ~/.drush/blah.aliases.drushrc.php:
 
         <?php
         $aliases['web1'] = array(
@@ -52,17 +35,39 @@ you could put the following in ~/.drush/blah.aliases.drushrc.php :
 The command specific array allows to override options defined on the step above. It can
 be used to deploy on different environments.
 
-* Then run drush deploy-setup @blah
-This will create a basic folder structure in /var/www/deploy/
+* All this will suppose your Drupal install is in a folder named **deploy** at the root of the
+git repository. Update paths if needed.
 
-* You need to put all untracked files in the /var/www/deploy/shared folder. In a classic
-Drupal install, all your default folder goes in there. Attribute ownership of the default
-folder to www-data.
+* Deploy stores its settings in a **deploy.drushrc.php** file, which will go in the same
+locations as your **drushrc.php** and **aliases.drushrc.php**. Here is the minimal configuration
+needed to get started:
+
+		<?php
+        $options['application'] = 'blah';
+        $options['deploy-repository'] = 'git@github.com:blah/site_repo.git';
+        $options['branch'] = "master";
+        $options['keep-releases'] = 3;
+        $options['deploy-via'] = 'RemoteCache';
+		$options['docroot'] = '/var/www/deploy';
+        $options['deploy-to'] = '/var/www/deploy';
+        ?>
+
+
+
+* Then run
+
+    drush deploy-setup @blah
+
+This will create a basic folder structure in **/var/www/deploy/**
+
+* You need to put all untracked files in the **/var/www/deploy/shared** folder. In a classic
+Drupal install, your default folder goes there. Attribute ownership of the default
+folder to **www-data** (the apache webserver user).
 
 ## CONFIGURATION OPTIONS
 
 Additional configuration options for your recipe can be included in your
-deploy.drushrc.php file as follows:
+**deploy.drushrc.php** file as follows:
 
 
         <?php
@@ -91,7 +96,7 @@ deploy.drushrc.php file as follows:
          }
         ?>
 
-* Any task you need will need to be defined. Tasks are to be put in deploy.drushrc.php.
+* Any task you need will need to be defined. Tasks are to be put in **deploy.drushrc.php**.
 Minimal tasks are :
 
 		<?php
@@ -129,9 +134,9 @@ Minimal tasks are :
 
 ## AVAILABLE COMMANDs
 
-For available commands, check Deploy.php file.
+For available commands, check **Deploy.php** file.
 
-* deploy
+* `deploy`
     Updates your remote cache.
     Initializes and updates git submodules.
     Creates a new release directory.
@@ -139,11 +144,11 @@ For available commands, check Deploy.php file.
     Links the ‚current‘ directory with your new deployed code.
     Executes your tasks.
 
-* deploy-rollback
+* `deploy-rollback`
     Relinks the current directory with the last release.
     Removes the faulty release.
 
-* deploy-setup
+* `deploy-setup`
 
 
 ### Setup
@@ -154,7 +159,8 @@ First setup the web servers with running:
 
 ### Deployment
 
-* To then deploy the latest from the master branch of git@github.com:blah/site_repo.git to the web servers web1.blah.com and web2.blah.com, you would do:
+* To then deploy the latest from the **master** branch of ** git@github.com:blah/site_repo.git **
+to the web servers ** web1.blah.com ** and ** web2.blah.com **, you would do:
 
     drush deploy @blah
 
