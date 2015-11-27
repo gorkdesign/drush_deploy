@@ -56,7 +56,7 @@ needed to get started:
 
 * Then run
 
-    drush deploy-setup @blah
+    `drush deploy-setup @blah`
 
 This will create a basic folder structure in **/var/www/deploy/**
 
@@ -155,14 +155,14 @@ For available commands, check **Deploy.php** file.
 
 First setup the web servers with running:
 
-    drush deploy-setup @live
+    `drush deploy-setup @live`
 
 ### Deployment
 
-* To then deploy the latest from the **master** branch of ** git@github.com:blah/site_repo.git **
-to the web servers ** web1.blah.com ** and ** web2.blah.com **, you would do:
+* To then deploy the latest from the **master** branch of <b> git@github.com:blah/site_repo.git</b>
+to the web servers web1.blah.com and web2.blah.com, you would do:
 
-    drush deploy @blah
+    `drush deploy @blah`
 
 
 ## REQUIREMENTS
