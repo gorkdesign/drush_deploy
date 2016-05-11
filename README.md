@@ -19,7 +19,7 @@ For example, you could put the folowing in ~/.drush/blah.aliases.drushrc.php:
            'remote-host' => 'web1.blah.com',
            'remote-user' => 'ubuntu',
            'command-specific' => array(
-             'deploy' => array(
+             'deploy-deploy' => array(
                'branch' => 'dev',
               ),
 	        'deploy-setup' => array(
