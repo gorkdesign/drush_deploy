@@ -1,4 +1,4 @@
-# DRUSH DEPLOY
+# Drush Deploy
 
 ## About
 
@@ -10,13 +10,13 @@ This project will **not** help you deploy content. For that, check out the [Depl
 
 ## USAGE
 
-* You define the servers you want to deploy to using drush site alias groups. 
-For example, you could put the folowing in ~/.drush/blah.aliases.drushrc.php:
+* You define the servers you want to deploy to using drush site alias groups.
+For example, you could put the following in ~/.drush/foo.aliases.drushrc.php:
 
         <?php
         $aliases['web1'] = array(
            'root' => '/var/www/deploy',
-           'remote-host' => 'web1.blah.com',
+           'remote-host' => 'web1.foo.com',
            'remote-user' => 'ubuntu',
            'command-specific' => array(
              'deploy-deploy' => array(
@@ -29,7 +29,7 @@ For example, you could put the folowing in ~/.drush/blah.aliases.drushrc.php:
         );
 
         $aliases['web2'] = $aliases['web1'];
-        $aliases['web2']['remote-host'] = 'web2.blah.com';
+        $aliases['web2']['remote-host'] = 'web2.foo.com';
         ?>
 
 The command specific array allows to override options defined on the step above. It can
@@ -39,12 +39,12 @@ be used to deploy on different environments.
 git repository. Update paths if needed.
 
 * Deploy stores its settings in a **deploy.drushrc.php** file, which will go in the same
-locations as your **drushrc.php** and **aliases.drushrc.php**. Here is the minimal configuration
+locations as your **drushrc.php** and ** *__aliasesname__*.drushrc.php**. Here is the minimal configuration
 needed to get started:
 
 		<?php
-        $options['application'] = 'blah';
-        $options['deploy-repository'] = 'git@github.com:blah/site_repo.git';
+        $options['application'] = 'foo';
+        $options['deploy-repository'] = 'git@github.com:foo/site_repo.git';
         $options['branch'] = "master";
         $options['keep-releases'] = 3;
         $options['deploy-via'] = 'RemoteCache';
@@ -52,11 +52,11 @@ needed to get started:
         $options['deploy-to'] = '/var/www/deploy';
         ?>
 
-
+This can be placed in **deploy.drushrc.php**. However then this applies to all sites that you run **drush deploy** commands on. It is also possible to place these setting or the ones you want override in your Drush Site Alias file. See the included [examples/drushdeployexample.aliases.drushrc.php](examples/drushdeployexample.aliases.drushrc.php) file.
 
 * Then run
 
-    `drush deploy-setup @blah`
+    `drush deploy-setup @foo.web1`
 
 This will create a basic folder structure in **/var/www/deploy/**
 
@@ -130,7 +130,8 @@ Minimal tasks are :
 		$options['before']['deploy-symlink'][] = '_updatedb';
 
 		?>
-
+### sync_via_http custom command example
+The **sync_via_http.drush.inc** file also included with Drush as an example, allows syncing the database via HTTP. Setting up the symlink to the database dump is shown as an example of a custom drush deploy task based on custom options set in the drush site aliases file. See the comments in [examples/customtasksexample.aliases.drushrc.php](examples/customtasksexample.aliases.drushrc.php) and the comments in [examples/deploy.drushrc.php](examples/deploy.drushrc.php) on the  **deploy_db_http_symlinks_task()** and **deploy_db_http_symlinks_task_8()** functions.
 
 ## AVAILABLE COMMANDs
 
@@ -159,10 +160,10 @@ First setup the web servers with running:
 
 ### Deployment
 
-* To then deploy the latest from the **master** branch of <b> git@github.com:blah/site_repo.git</b>
-to the web servers <b>web1.blah.com</b> and <b>web2.blah.com</b>, you would do:
+* To then deploy the latest from the **master** branch of  `git@github.com:foo/site_repo.git`
+to both of the web servers ** web1.foo.com ** and ** web2.foo.com ** , you would do:
 
-    `drush deploy @blah`
+    `drush deploy @foo`
 
 
 ## REQUIREMENTS
@@ -170,4 +171,5 @@ to the web servers <b>web1.blah.com</b> and <b>web2.blah.com</b>, you would do:
 * php 5.3 and above
 * non-windows OS
 
-
+## Examples
+See the [examples](examples) folder for example files and the [README.md](examples/README.md) therein for more information about them.
