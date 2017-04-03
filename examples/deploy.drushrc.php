@@ -4,7 +4,7 @@
     $options['before']['deploy-symlink'][] = 'deploy_before_deploy_symlink_tasks';
 // Run these tasks after the 'current' symlink has been updated
     $options['after']['deploy-symlink'][] = 'deploy_after_deploy_symlink_tasks';
-// Check to see if this is a Drupa 7 or 8 site so we can run different tasks for each.
+// Check to see if this is a Drupal 7 or 8 site so we can run different tasks for each.
 $drupal_major_version = NULL;
 if (!function_exists("drupal_major_version_check")) {
   function drupal_major_version_check($d) {
