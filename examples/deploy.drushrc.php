@@ -16,6 +16,32 @@ if (!function_exists("drupal_major_version_check")) {
     }
   }
 }
+
+
+// After a successful deployment check if running `drush deploy-cleanup` is needed.
+if (!function_exists("is_cleanup_needed")) {
+  function is_cleanup_needed($d) {
+    $count = drush_get_option('keep-releases', 5);
+    $current_alias_name = drush_get_option('alias-name');
+    $remote_user =  drush_get_option('remote-user');
+    $remote_host =  drush_get_option('remote-host');
+    $ssh_options =  drush_get_option('ssh-options');
+    $command_to_run = "ls -x " . drush_get_option('deploy-to') . '/releases';
+    $ssh_command = "ssh" . " " . $ssh_options . " " . $remote_user . "@" . $remote_host;
+    exec($ssh_command . " '" . $command_to_run . "'", $output );
+    $output = implode(" ", $output);
+    $releases = preg_split("/\s+/", $output);
+    $total = count($releases);
+    if ($count >= count($releases)) {
+      drush_log("No old releases to clean up", 'notice');
+    }
+    else {
+      drush_log("Found " . $count . " of " . count($releases) . " deployed releases.", 'notice');
+      drush_log("Please run 'drush deploy-cleanup " . $current_alias_name . "' to remove old releases.", 'completed'); //FIXME: Replace wild card with site alias that the command was run against. - FJH
+    }
+  }
+}
+
 // Default Group of Tasks that should run before the new symlinks are created.
 // This function should be used to overwrite in site specific aliases.drushrc.php files
 if (!function_exists("deploy_before_deploy_symlink_tasks")) {
@@ -59,6 +85,7 @@ if (!function_exists("deploy_after_deploy_symlink_tasks")) {
           drush_log("Drush Deploy is not configured for that version of Drupal, exiting", $type = error);
           exit(1);
       }
+      is_cleanup_needed();
   }
 }
 
