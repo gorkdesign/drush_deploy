@@ -30,6 +30,7 @@ if (!function_exists("deploy_before_deploy_symlink_tasks")) {
           break;
         case 8: // Tasks to run for Drupal 8 installed with Composer.
           deploy_settings_local_php_task_8($d);
+          deploy_composer_install_task_8($d);
           deploy_symlinks_task_8($d);
           deploy_db_http_symlinks_task_8($d);
           break;
@@ -49,7 +50,6 @@ if (!function_exists("deploy_after_deploy_symlink_tasks")) {
           deploy_update_task($d);
           break;
         case 8: // Tasks to run for Drupal 8 installed with Composer.
-          deploy_composer_install_task_8($d);
           deploy_configuration_import_task_8($d);
           deploy_update_db_task_8($d);
           deploy_configuration_import_task_8($d); // We run this a second time because if modules were installed the configuration for them could not be imported the first time, but they were installed.
