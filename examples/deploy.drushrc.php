@@ -195,7 +195,7 @@ if (!function_exists("deploy_db_http_symlinks_task_8")) {
  */
 if (!function_exists("deploy_composer_install_task_8")) {
   function deploy_composer_install_task_8($d) {
-    $d->run_once("cd %s && composer install --no-progress --no-suggest", $d->latest_release());
+    $d->run_once("cd %s && composer install --no-dev --no-progress --no-suggest", $d->latest_release());
 //    drush_log("Updated database, if required.", $type = notice);
   }
 }
