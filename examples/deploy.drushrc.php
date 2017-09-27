@@ -57,6 +57,7 @@ if (!function_exists("deploy_before_deploy_symlink_tasks")) {
         case 8: // Tasks to run for Drupal 8 installed with Composer.
           deploy_settings_local_php_task_8($d);
           deploy_composer_install_task_8($d);
+          deploy_settings_local_htaccess_task_8($d);
           deploy_symlinks_task_8($d);
           deploy_db_http_symlinks_task_8($d);
           break;
@@ -76,9 +77,16 @@ if (!function_exists("deploy_after_deploy_symlink_tasks")) {
           deploy_update_task($d);
           break;
         case 8: // Tasks to run for Drupal 8 installed with Composer.
+          deploy_update_db_task_8($d);
+          deploy_excluded_configuration_export_task_8($d);
+          deploy_cache_task_d8($d);
           deploy_configuration_import_task_8($d);
           deploy_update_db_task_8($d);
+          deploy_cache_task_d8($d);
           deploy_configuration_import_task_8($d); // We run this a second time because if modules were installed the configuration for them could not be imported the first time, but they were installed.
+          deploy_update_db_task_8($d);
+          deploy_cache_task_d8($d);
+          deploy_configuration_import_task_8($d); // The updb should always be first and you need to do n+1 times drush cim where n is the number of filters that get enabled. bircher https://www.drupal.org/node/2885643#comment-12126167
           deploy_cache_task_d8($d);
           break;
         default:
@@ -187,6 +195,19 @@ if (!function_exists("deploy_settings_local_php_task_8")) {
 }
 
 /**
+ * Copy a local .htaccess file from two directory up from the webroot (docroot).
+ * A task needs to be defined with a @task "decorator" in the comment block preceding it
+ * @task
+ * @mandatory
+ */
+if (!function_exists("deploy_settings_local_htaccess_task_8")) {
+  function deploy_settings_local_htaccess_task_8($d) {
+          $d->run("cp ". ($oneupfromwebroot = dirname(drush_get_option('root'))) . "/.htaccess-local %s/docroot/.htaccess 2>/dev/null || :", $d->latest_release());
+//    drush_log("Deployed local version of .htaccess file.", $type = 'notice');
+  }
+}
+
+/**
  * Create a link to Drupal's shared files (sites/default/files).
  * A task needs to be defined with a @task "decorator" in the comment block preceding it
  * @task
@@ -224,6 +245,20 @@ if (!function_exists("deploy_composer_install_task_8")) {
   function deploy_composer_install_task_8($d) {
     $d->run_once("cd %s && composer install --no-dev --no-progress --no-suggest", $d->latest_release());
 //    drush_log("Updated database, if required.", $type = notice);
+  }
+}
+
+/**
+ * Move to the webroot and export the excluded configuration from the database.
+ * A task needs to be defined with a @task "decorator" in the comment block preceding it
+ * @task
+ */
+if (!function_exists("deploy_excluded_configuration_export_task_8")) {
+  function deploy_excluded_configuration_export_task_8($d) {
+    if (strpos($d->sites[0]['remote-environment'], 'squidix') !== FALSE) {  // FIXME: We should change this to check if the excluded configuration split is set to TRUE in the settings.php files. See https://anavarre.net/from-conf-to-config-and-settings-in-drupal-8/     Can we also check to see if config_split is installed before running?
+    $d->run_once("cd %s/docroot && drush cc drush && drush csex -y excluded", $d->latest_release());
+  //    drush_log("Updated database, if required.", $type = notice);
+    }
   }
 }
 
